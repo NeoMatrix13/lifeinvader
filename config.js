@@ -13,5 +13,5 @@ const GH_CONFIG = {
   owner: "NeoMatrix13",   // e.g. "hellb"
   repo: "lifeinvader",          // e.g. "dead-pixel-web"
   branch: "main",                  // the branch GitHub Pages / your repo uses
-  token: "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",  // a fine-grained token, scoped to this repo only
+  token: "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",  // a fine-grained token, scoped to this repo only
 };
