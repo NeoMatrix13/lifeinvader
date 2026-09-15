@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Profile ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home">Home</a>
+    <a href="forum.html" data-page="forum">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login">Login</a>
+      <a href="register.html" data-page="register">Register</a>
+    </span>
+  </div>
+
+  <div id="profile-box">
+    <p style="text-align:center;">loading profile...</p>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span></div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const currentSessionUser = await DPW.initChrome('profile');
+  if (!DPW.configOk()) return;
+
+  const username = DPW.qs('u') || (currentSessionUser ? currentSessionUser.username : null);
+  const box = document.getElementById('profile-box');
+
+  if (!username) {
+    box.innerHTML = '<div class="panel"><div class="panel-body"><p>No profile specified. <a href="login.html">Log in</a> to see your own.</p></div></div>';
+    return;
+  }
+
+  async function load() {
+    box.innerHTML = '<p style="text-align:center;">loading profile...</p>';
+    try {
+      const data = await DPW.getProfile(username);
+      const isOwner = currentSessionUser && currentSessionUser.username === data.user.username;
+
+      box.innerHTML = `
+        <div class="two-col">
+          <div class="col-side">
+            <div class="panel">
+              <div class="panel-head">${DPW.escapeHtml(data.user.username)}</div>
+              <div class="panel-body" style="text-align:center;">
+                <div id="avatar-display">
+                  ${data.user.avatar_url
+                    ? `<img class="avatar-img avatar-lg" id="avatar-img" src="${DPW.escapeHtml(data.user.avatar_url)}" alt="${DPW.escapeHtml(data.user.username)}'s avatar">`
+                    : `<div class="avatar-placeholder" id="avatar-img" style="width:90px;height:90px;"></div>`}
+                </div>
+                <p style="margin:10px 0 4px;color:#ffff00;font-weight:bold;">${DPW.escapeHtml(data.user.username)}</p>
+                <p style="font-size:10px;color:#9999cc;">Joined ${DPW.formatDate(data.user.created_at)}</p>
+                <div class="stat-line"><span>Total Posts</span><span>${data.postCount}</span></div>
+                <div class="stat-line"><span>Threads</span><span>${data.threadCount}</span></div>
+                <div class="stat-line"><span>Replies</span><span>${data.replyCount}</span></div>
+                ${data.scanLimited ? `<p style="font-size:9px;color:#666699;margin-top:8px;">(reply count is based on the most recently active threads only — this forum has grown past what can be scanned live)</p>` : ''}
+              </div>
+            </div>
+
+            ${isOwner ? `
+              <div class="panel">
+                <div class="panel-head">Change Profile Picture</div>
+                <div class="panel-body">
+                  <div class="field-row">
+                    <label>Choose an image (JPG, PNG, GIF, or WEBP — max 2MB)</label>
+                    <input type="file" id="avatar-input" accept="image/png,image/jpeg,image/gif,image/webp">
+                  </div>
+                  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button id="avatar-upload-btn">Upload</button>
+                    ${data.user.avatar_url ? `<button id="avatar-remove-btn">Remove Current Picture</button>` : ''}
+                  </div>
+                  <div id="avatar-status" class="status-msg" style="display:none;"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          <div class="col-main">
+            <div class="panel">
+              <div class="panel-head">Signature</div>
+              <div class="panel-body">
+                ${isOwner ? `
+                  <textarea id="sig-input" rows="3" maxlength="200" placeholder="Write a short signature...">${DPW.escapeHtml(data.user.signature)}</textarea>
+                  <div style="margin-top:6px;"><button id="sig-save">Save Signature</button></div>
+                  <div id="sig-status" class="status-msg" style="display:none;"></div>
+                ` : (data.user.signature
+                    ? `<div class="signature" style="border-top:none;margin-top:0;">${DPW.escapeHtml(data.user.signature)}</div>`
+                    : `<p style="color:#666699;font-size:11px;">No signature set.</p>`)
+                }
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">Recent Threads</div>
+              <div class="panel-body">
+                ${data.recentThreads.length ? `
+                  <ul class="plain-list">
+                    ${data.recentThreads.map((t) => `
+                      <li><a href="thread.html?id=${t.id}">${DPW.escapeHtml(t.title)}</a>
+                      <span style="color:#666699;font-size:9px;"> — ${DPW.timeAgo(t.created_at)}</span></li>
+                    `).join('')}
+                  </ul>
+                ` : `<p style="color:#666699;font-size:11px;">No threads started yet.</p>`}
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">Recent Replies</div>
+              <div class="panel-body">
+                ${data.recentReplies.length ? `
+                  <ul class="plain-list">
+                    ${data.recentReplies.map((r) => `
+                      <li>in <a href="thread.html?id=${r.thread_id}">${DPW.escapeHtml(r.thread_title)}</a>:
+                      <div style="color:#9999cc;margin-top:2px;">${DPW.escapeHtml(r.message.slice(0, 140))}${r.message.length > 140 ? '…' : ''}</div>
+                      <span style="color:#666699;font-size:9px;">${DPW.timeAgo(r.created_at)}</span></li>
+                    `).join('')}
+                  </ul>
+                ` : `<p style="color:#666699;font-size:11px;">No replies yet.</p>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (isOwner) {
+        document.getElementById('sig-save').addEventListener('click', async () => {
+          const statusEl = document.getElementById('sig-status');
+          const val = document.getElementById('sig-input').value;
+          try {
+            await DPW.updateSignature(val);
+            DPW.showStatus(statusEl, 'SIGNATURE UPDATED!', 'ok');
+          } catch (e) {
+            DPW.showStatus(statusEl, e.message, 'error');
+          }
+        });
+
+        const avatarBtn = document.getElementById('avatar-upload-btn');
+        const avatarStatus = document.getElementById('avatar-status');
+        avatarBtn.addEventListener('click', async () => {
+          const fileInput = document.getElementById('avatar-input');
+          const file = fileInput.files[0];
+          if (!file) {
+            DPW.showStatus(avatarStatus, 'ERROR: Choose an image file first.', 'error');
+            return;
+          }
+          avatarBtn.disabled = true;
+          try {
+            const avatarUrl = await DPW.uploadAvatar(file);
+            DPW.showStatus(avatarStatus, 'PROFILE PICTURE UPDATED!', 'ok');
+            document.getElementById('avatar-display').innerHTML =
+              `<img class="avatar-img avatar-lg" src="${DPW.escapeHtml(avatarUrl)}" alt="avatar">`;
+            fileInput.value = '';
+          } catch (e) {
+            DPW.showStatus(avatarStatus, e.message, 'error');
+          }
+          avatarBtn.disabled = false;
+        });
+
+        const removeBtn = document.getElementById('avatar-remove-btn');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', async () => {
+            removeBtn.disabled = true;
+            try {
+              await DPW.removeAvatar();
+              DPW.showStatus(avatarStatus, 'PROFILE PICTURE REMOVED.', 'ok');
+              document.getElementById('avatar-display').innerHTML = `<div class="avatar-placeholder" style="width:90px;height:90px;"></div>`;
+              removeBtn.style.display = 'none';
+            } catch (e) {
+              DPW.showStatus(avatarStatus, e.message, 'error');
+              removeBtn.disabled = false;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      box.innerHTML = `<div class="panel"><div class="panel-body"><p style="color:#ff6666;">${DPW.escapeHtml(e.message)}</p></div></div>`;
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

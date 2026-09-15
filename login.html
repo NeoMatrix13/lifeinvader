@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Login ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home">Home</a>
+    <a href="forum.html" data-page="forum">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login" class="current">Login</a>
+      <a href="register.html" data-page="register">Register</a>
+    </span>
+  </div>
+
+  <div class="panel" style="max-width:380px;margin:24px auto;">
+    <div class="panel-head">Member Login</div>
+    <div class="panel-body">
+      <div class="field-row">
+        <label>Username</label>
+        <input type="text" id="username" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div class="field-row">
+        <label>Password</label>
+        <input type="password" id="password" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div style="margin-top:10px;">
+        <button id="login-btn" class="btn-hot">Login</button>
+      </div>
+      <div id="login-status" class="status-msg" style="display:none;"></div>
+      <p style="font-size:10px;color:#9999cc;margin-top:14px;">No account? <a href="register.html">Register here »</a></p>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span></div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  await DPW.initChrome('login');
+  if (!DPW.configOk()) return;
+
+  const existing = await DPW.currentUser();
+  if (existing) window.location.href = 'index.html';
+
+  const btn = document.getElementById('login-btn');
+  const statusEl = document.getElementById('login-status');
+
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !password) {
+      DPW.showStatus(statusEl, 'ERROR: All fields are required.', 'error');
+      return;
+    }
+    btn.disabled = true;
+    try {
+      await DPW.login(username, password);
+      DPW.showStatus(statusEl, 'LOGIN SUCCESSFUL — redirecting...', 'ok');
+      setTimeout(() => (window.location.href = 'index.html'), 500);
+    } catch (e) {
+      DPW.showStatus(statusEl, e.message, 'error');
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', doLogin);
+  document.getElementById('password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+})();
+</script>
+</body>
+</html>

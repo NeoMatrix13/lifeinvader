@@ -1,0 +1,448 @@
+/* ===========================================================
+   DEAD PIXEL WEB — style.css
+   authentic-ish 1999-2005 forum styling
+   =========================================================== */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000010;
+  background-image:
+    radial-gradient(#0a0a2a 1px, transparent 1px);
+  background-size: 4px 4px;
+  color: #c0c0ff;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+a { color: #00ffff; }
+a:visited { color: #cc99ff; }
+a:hover { color: #ffff00; text-decoration: underline; }
+
+/* ---------- layout shell ---------- */
+
+#page {
+  width: 800px;
+  margin: 0 auto;
+  background-color: #000030;
+  border-left: 2px solid #00ffff;
+  border-right: 2px solid #00ffff;
+  min-height: 100vh;
+}
+
+.viewport-notice {
+  background: #000000;
+  color: #ffff00;
+  text-align: center;
+  font-size: 10px;
+  font-family: "Courier New", Courier, monospace;
+  padding: 3px 0;
+  border-bottom: 1px solid #333;
+}
+
+/* ---------- header / banner ---------- */
+
+.site-header {
+  background: linear-gradient(180deg, #1a0033 0%, #000030 60%, #000030 100%);
+  border-bottom: 3px double #ff00ff;
+  padding: 10px 14px 8px;
+  text-align: center;
+  position: relative;
+}
+
+.site-title {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 38px;
+  font-weight: bold;
+  margin: 6px 0 2px;
+  letter-spacing: 2px;
+  color: #00ff00;
+  text-shadow:
+    2px 2px 0 #ff00ff,
+    -1px -1px 0 #00ffff;
+}
+
+.site-subtitle {
+  font-size: 11px;
+  color: #ffcc00;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.sparkle {
+  color: #ffff00;
+}
+
+.blink {
+  animation: blinker 1s step-start infinite;
+}
+@keyframes blinker {
+  50% { opacity: 0; }
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #000000;
+  color: #00ff00;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  border-top: 1px solid #ff00ff;
+  border-bottom: 1px solid #ff00ff;
+  padding: 3px 0;
+}
+.marquee-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 18s linear infinite;
+}
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ---------- nav bar ---------- */
+
+.nav-bar {
+  display: flex;
+  flex-wrap: wrap;
+  background: #000000;
+  border-top: 2px solid #444;
+  border-bottom: 2px solid #444;
+}
+.nav-bar a {
+  flex: 1;
+  text-align: center;
+  padding: 6px 4px;
+  color: #00ffff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 11px;
+  border-right: 1px solid #222;
+  background: #050518;
+}
+.nav-bar a:last-child { border-right: none; }
+.nav-bar a:hover {
+  background: #ff00ff;
+  color: #000000;
+}
+.nav-bar a.current {
+  background: #00ff00;
+  color: #000000;
+}
+
+/* ---------- generic panels (table-like) ---------- */
+
+.panel {
+  border: 2px outset #666699;
+  background: #0a0a2a;
+  margin: 12px;
+  padding: 0;
+}
+.panel-head {
+  background: linear-gradient(90deg, #ff00ff, #6600cc);
+  color: #ffff00;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-bottom: 2px solid #000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.panel-body {
+  padding: 10px;
+}
+
+.two-col {
+  display: flex;
+  gap: 0;
+}
+.two-col .col-main { flex: 2; min-width: 0; }
+.two-col .col-side { flex: 1; min-width: 0; }
+
+/* ---------- buttons / inputs (beveled) ---------- */
+
+button, .btn, input[type="submit"] {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  background: #c0c0d8;
+  color: #000030;
+  border: 2px outset #e0e0f0;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+button:active, .btn:active, input[type="submit"]:active {
+  border-style: inset;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-hot {
+  background: #ff3366;
+  color: #fff;
+  border-color: #ff99bb;
+}
+.btn-hot:hover { background: #ff5588; }
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  background: #000010;
+  color: #00ff88;
+  border: 2px inset #666699;
+  padding: 5px;
+}
+textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+
+label {
+  display: block;
+  font-size: 11px;
+  color: #ffcc00;
+  margin: 8px 0 3px;
+  font-weight: bold;
+}
+
+.field-row { margin-bottom: 6px; }
+
+/* ---------- editor box (posting UI) ---------- */
+
+.editor-frame {
+  border: 2px inset #666699;
+  background: #000000;
+  padding: 2px;
+  margin-top: 4px;
+}
+.editor-label {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #00ff00;
+  margin-bottom: 3px;
+}
+
+/* ---------- construction / notices ---------- */
+
+.construction-banner {
+  background: repeating-linear-gradient(
+    45deg, #ffff00, #ffff00 10px, #000000 10px, #000000 20px
+  );
+  color: #000000;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 6px 4px;
+  margin: 12px;
+  border: 2px solid #000;
+}
+.construction-banner span {
+  background: #000;
+  color: #ffff00;
+  padding: 2px 8px;
+}
+
+.status-msg {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  margin: 10px 12px;
+  border: 1px dashed;
+}
+.status-msg.ok {
+  color: #00ff00;
+  border-color: #00ff00;
+  background: #001a00;
+}
+.status-msg.error {
+  color: #ff4444;
+  border-color: #ff4444;
+  background: #1a0000;
+}
+
+/* ---------- widgets ---------- */
+
+.counter-box {
+  font-family: "Courier New", monospace;
+  background: #000;
+  color: #00ff00;
+  border: 2px inset #444;
+  padding: 4px 8px;
+  display: inline-block;
+  letter-spacing: 2px;
+  font-size: 14px;
+}
+
+.stat-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px dotted #333366;
+  font-size: 11px;
+}
+.stat-line:last-child { border-bottom: none; }
+
+ul.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+ul.plain-list li {
+  padding: 4px 2px;
+  border-bottom: 1px dotted #333366;
+  font-size: 11px;
+}
+ul.plain-list li:last-child { border-bottom: none; }
+
+/* ---------- category / thread listing ---------- */
+
+.section-title {
+  background: #1a0033;
+  color: #00ffff;
+  font-weight: bold;
+  padding: 4px 10px;
+  border: 1px solid #6600cc;
+  border-bottom: none;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+table.forum-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #050520;
+}
+table.forum-table th {
+  background: #200040;
+  color: #ffcc00;
+  text-align: left;
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid #6600cc;
+  text-transform: uppercase;
+}
+table.forum-table td {
+  border: 1px solid #292955;
+  padding: 6px 8px;
+  vertical-align: top;
+  font-size: 11px;
+}
+table.forum-table tr:hover td {
+  background: #10103a;
+}
+.cat-name a { font-weight: bold; }
+.cat-desc { color: #9999cc; font-size: 10px; }
+.num-cell { text-align: center; width: 60px; color: #00ffcc; }
+.last-cell { width: 180px; font-size: 10px; color: #9999cc; }
+
+/* ---------- thread view ---------- */
+
+.post-block {
+  border: 1px solid #333366;
+  margin-bottom: 10px;
+  display: flex;
+}
+.post-author {
+  width: 140px;
+  background: #0a0a30;
+  border-right: 1px solid #333366;
+  padding: 8px;
+  font-size: 10px;
+  color: #99ccff;
+  text-align: center;
+}
+.post-author .uname {
+  color: #ffff00;
+  font-weight: bold;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 6px;
+}
+.avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 6px;
+  background: repeating-conic-gradient(#333366 0% 25%, #1a1a40 0% 50%) 50% / 12px 12px;
+  border: 2px inset #666699;
+}
+.avatar-img {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 6px;
+  object-fit: cover;
+  border: 2px inset #666699;
+  display: block;
+  image-rendering: pixelated;
+}
+.avatar-img.avatar-lg {
+  width: 90px;
+  height: 90px;
+}
+.post-content {
+  flex: 1;
+  padding: 10px;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.post-meta {
+  font-size: 10px;
+  color: #666699;
+  border-top: 1px dotted #333366;
+  margin-top: 8px;
+  padding-top: 5px;
+}
+.signature {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed #444477;
+  font-size: 10px;
+  color: #cc99ff;
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+/* ---------- shoutbox / guestbook ---------- */
+
+.shout {
+  font-size: 11px;
+  padding: 3px 0;
+  border-bottom: 1px dotted #333366;
+}
+.shout .who { color: #ffff00; font-weight: bold; }
+.shout .when { color: #666699; font-size: 9px; }
+
+/* ---------- footer ---------- */
+
+.site-footer {
+  background: #000000;
+  border-top: 3px double #ff00ff;
+  padding: 10px;
+  text-align: center;
+  font-size: 10px;
+  color: #666699;
+}
+.webring {
+  margin-top: 6px;
+  font-family: "Courier New", monospace;
+}
+.webring a { margin: 0 6px; }
+
+.star {
+  color: #ffff00;
+}
+
+.tag-online { color: #00ff00; }
+.tag-offline { color: #ff4444; }
+
+@media (max-width: 820px) {
+  #page { width: 100%; border-left: none; border-right: none; }
+  .site-title { font-size: 26px; }
+  .two-col { flex-direction: column; }
+  .post-block { flex-direction: column; }
+  .post-author { width: auto; border-right: none; border-bottom: 1px solid #333366; }
+}

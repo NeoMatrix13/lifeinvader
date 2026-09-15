@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Thread ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home">Home</a>
+    <a href="forum.html" data-page="forum" class="current">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login">Login</a>
+      <a href="register.html" data-page="register">Register</a>
+    </span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <a href="forum.html" style="color:#ffff00;">« Back to Forum</a>
+      &nbsp;|&nbsp; <span id="thread-category-name"></span>
+    </div>
+    <div class="panel-body" id="thread-box">
+      <p>loading thread...</p>
+    </div>
+  </div>
+
+  <div class="panel" id="reply-panel" style="display:none;">
+    <div class="panel-head">Post a Reply</div>
+    <div class="panel-body">
+      <div class="editor-frame">
+        <div style="padding:8px;">
+          <div class="editor-label">[ <span id="reply-as">USERNAME</span> ]</div>
+          <textarea id="reply-message" rows="5" maxlength="8000" placeholder="Type your message here..."></textarea>
+          <div style="margin-top:8px;"><button id="reply-submit">Post Message</button></div>
+          <div id="reply-status" class="status-msg" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="login-prompt-panel" style="display:none;">
+    <div class="panel-body" style="text-align:center;">
+      <p><a href="login.html">Log in</a> or <a href="register.html">register</a> to reply to this thread.</p>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span></div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const user = await DPW.initChrome('forum');
+  if (!DPW.configOk()) return;
+
+  const threadId = DPW.qs('id');
+  const box = document.getElementById('thread-box');
+
+  function renderPost({ author, author_joined, author_signature, author_avatar, created_at, message }, isOp) {
+    const avatarHtml = author_avatar
+      ? `<img class="avatar-img" src="${DPW.escapeHtml(author_avatar)}" alt="${DPW.escapeHtml(author)}'s avatar">`
+      : `<div class="avatar-placeholder"></div>`;
+    return `
+      <div class="post-block">
+        <div class="post-author">
+          ${avatarHtml}
+          <a class="uname" href="profile.html?u=${encodeURIComponent(author)}">${DPW.escapeHtml(author)}</a>
+          ${isOp ? '<div style="color:#ff99ff;font-size:9px;">THREAD STARTER</div>' : ''}
+          ${author_joined ? `<div>Joined: ${DPW.formatDate(author_joined)}</div>` : ''}
+        </div>
+        <div class="post-content">
+          <div>${DPW.escapeHtml(message)}</div>
+          ${author_signature ? `<div class="signature">${DPW.escapeHtml(author_signature)}</div>` : ''}
+          <div class="post-meta">Posted: ${DPW.formatDate(created_at)} (${DPW.timeAgo(created_at)})</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadThread() {
+    if (!threadId) {
+      box.innerHTML = '<p style="color:#ff6666;">ERROR 404: PAGE NOT FOUND</p>';
+      return;
+    }
+    try {
+      const data = await DPW.getThread(threadId);
+      document.getElementById('thread-category-name').textContent = data.thread.category_name;
+      document.title = `:: Dead Pixel Web :: ${data.thread.title} ::`;
+
+      let html = `<h2 style="color:#00ffff;margin-top:0;">${DPW.escapeHtml(data.thread.title)}</h2>`;
+      html += renderPost(data.thread, true);
+      for (const r of data.replies) {
+        html += renderPost(r, false);
+      }
+      box.innerHTML = html;
+
+      if (user) {
+        document.getElementById('reply-panel').style.display = 'block';
+        document.getElementById('reply-as').textContent = user.username;
+      } else {
+        document.getElementById('login-prompt-panel').style.display = 'block';
+      }
+    } catch (e) {
+      box.innerHTML = `<p style="color:#ff6666;">${DPW.escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  const submitBtn = document.getElementById('reply-submit');
+  submitBtn.addEventListener('click', async () => {
+    const ta = document.getElementById('reply-message');
+    const statusEl = document.getElementById('reply-status');
+    const msg = ta.value.trim();
+    if (!msg) {
+      DPW.showStatus(statusEl, 'ERROR: Message cannot be empty.', 'error');
+      return;
+    }
+    submitBtn.disabled = true;
+    try {
+      await DPW.createReply(threadId, msg);
+      ta.value = '';
+      DPW.showStatus(statusEl, 'REPLY POSTED!', 'ok');
+      await loadThread();
+    } catch (e) {
+      DPW.showStatus(statusEl, e.message, 'error');
+    }
+    submitBtn.disabled = false;
+  });
+
+  loadThread();
+})();
+</script>
+</body>
+</html>

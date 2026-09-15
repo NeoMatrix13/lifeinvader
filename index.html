@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Home ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION WITH NETSCAPE NAVIGATOR OR INTERNET EXPLORER 5+ ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+    <div class="site-subtitle">// a forum for people who miss the old internet //</div>
+    <div style="font-size:10px;color:#66ff66;">est. long ago <span class="blink">●</span> still standing</div>
+  </div>
+
+  <div class="marquee">
+    <div class="marquee-track">*** WELCOME TO DEAD PIXEL WEB *** SIGN THE GUESTBOOK *** NEW MEMBERS ALWAYS WELCOME *** THIS SITE IS UNDER CONSTRUCTION FOREVER *** DO NOT FEED THE TROLLS *** </div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home" class="current">Home</a>
+    <a href="forum.html" data-page="forum">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login">Login</a>
+      <a href="register.html" data-page="register">Register</a>
+    </span>
+  </div>
+
+  <div class="construction-banner">🚧 <span>THIS SITE IS PERPETUALLY UNDER CONSTRUCTION</span> 🚧</div>
+
+  <div class="panel">
+    <div class="panel-head">Welcome, Traveler</div>
+    <div class="panel-body">
+      <p>You have reached <strong>Dead Pixel Web</strong>, a small corner of the internet built the old way — table-ish
+      panels, loud colors, and a guestbook that actually gets signed. Pull up a chair, read a thread, and if you've
+      got something to say, <a href="register.html">make an account</a>. It takes a minute.</p>
+      <p id="logged-in-as" style="color:#66ffcc;font-family:'Courier New',monospace;font-size:11px;">checking session...</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="col-main">
+
+      <div class="panel">
+        <div class="panel-head">Latest Forum Threads</div>
+        <div class="panel-body" id="latest-threads">
+          <p>loading threads...</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Shoutbox / Guestbook</div>
+        <div class="panel-body">
+          <div id="shoutbox-list"><p>loading shouts...</p></div>
+          <div id="shout-form-area" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-side">
+
+      <div class="panel">
+        <div class="panel-head">Site Stats</div>
+        <div class="panel-body">
+          <div class="stat-line"><span>Members</span><span id="stat-members">-</span></div>
+          <div class="stat-line"><span>Threads</span><span id="stat-threads">-</span></div>
+          <div class="stat-line"><span>Replies</span><span id="stat-replies">-</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Running On</div>
+        <div class="panel-body" style="font-size:10px;color:#9999cc;">
+          <p style="margin:0 0 6px;">No server. No database. Just <span class="tag-online">GitHub</span>
+          holding every thread as an Issue, every reply as a comment, and this page talking to it directly.</p>
+          <p style="margin:0;">100% static HTML, hosted for free.</p>
+        </div>
+      </div>
+
+      <div class="panel" id="members">
+        <div class="panel-head">Newest Members</div>
+        <div class="panel-body">
+          <ul class="plain-list" id="latest-members">
+            <li>loading...</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span> — no rights reserved, this is the free internet</div>
+    <div class="webring">
+      <span class="star">★</span>
+      <a href="#">« PREV SITE</a> |
+      <a href="#">WEB RING: RETRO NET</a> |
+      <a href="#">NEXT SITE »</a>
+      <span class="star">★</span>
+    </div>
+    <div style="margin-top:6px;">Optimized for 800x600 &middot; 56k modem friendly &middot; No cookies except the ones we bake</div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const user = await DPW.initChrome('home');
+  if (!DPW.configOk()) return;
+
+  async function loadStats() {
+    try {
+      const s = await DPW.getStats();
+      document.getElementById('stat-members').textContent = s.memberCount;
+      document.getElementById('stat-threads').textContent = s.threadCount;
+      document.getElementById('stat-replies').textContent = s.replyCount;
+    } catch (e) {
+      /* stats are non-critical */
+    }
+  }
+  loadStats();
+
+  async function loadThreads() {
+    const box = document.getElementById('latest-threads');
+    try {
+      const threads = await DPW.listThreads();
+      if (threads.length === 0) {
+        box.innerHTML = '<p style="color:#9999cc;">No threads yet. <a href="forum.html">Start the first one »</a></p>';
+        return;
+      }
+      const sorted = [...threads].sort((a, b) => new Date(b.last_activity) - new Date(a.last_activity)).slice(0, 8);
+      box.innerHTML = `
+        <table class="forum-table">
+          <tr><th>Title</th><th>Category</th><th>Author</th><th>Replies</th><th>Last Activity</th></tr>
+          ${sorted.map((t) => `
+            <tr>
+              <td class="cat-name"><a href="thread.html?id=${t.id}">${DPW.escapeHtml(t.title)}</a></td>
+              <td class="cat-desc">${DPW.escapeHtml(t.category_name)}</td>
+              <td>${DPW.escapeHtml(t.author)}</td>
+              <td class="num-cell">${t.reply_count}</td>
+              <td class="last-cell">${DPW.timeAgo(t.last_activity)}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    } catch (e) {
+      box.innerHTML = `<p style="color:#ff6666;">Could not load threads. (${DPW.escapeHtml(e.message)})</p>`;
+    }
+  }
+  loadThreads();
+
+  async function loadMembers() {
+    const box = document.getElementById('latest-members');
+    try {
+      const members = await DPW.getLatestMembers(8);
+      if (members.length === 0) {
+        box.innerHTML = '<li>nobody yet — be the first!</li>';
+        return;
+      }
+      box.innerHTML = members.map((m) => `
+        <li><a href="profile.html?u=${encodeURIComponent(m.username)}">${DPW.escapeHtml(m.username)}</a>
+        <span style="color:#666699;font-size:9px;"> — joined ${DPW.formatDate(m.created_at)}</span></li>
+      `).join('');
+    } catch (e) {
+      box.innerHTML = `<li style="color:#ff6666;">Could not load members. (${DPW.escapeHtml(e.message)})</li>`;
+    }
+  }
+  loadMembers();
+
+  async function loadShouts() {
+    const box = document.getElementById('shoutbox-list');
+    try {
+      const shouts = await DPW.listShouts();
+      if (shouts.length === 0) {
+        box.innerHTML = '<p style="color:#9999cc;">The guestbook is empty. Say hello!</p>';
+      } else {
+        box.innerHTML = shouts.map((p) => `
+          <div class="shout">
+            <span class="who">${DPW.escapeHtml(p.username)}:</span> ${DPW.escapeHtml(p.message)}
+            <span class="when"> (${DPW.timeAgo(p.created_at)})</span>
+          </div>
+        `).join('');
+      }
+    } catch (e) {
+      box.innerHTML = `<p style="color:#ff6666;">Could not load the guestbook. (${DPW.escapeHtml(e.message)})</p>`;
+    }
+
+    const formArea = document.getElementById('shout-form-area');
+    if (user) {
+      formArea.innerHTML = `
+        <div class="editor-frame">
+          <div class="field-row" style="padding:6px;">
+            <textarea id="shout-input" maxlength="500" rows="2" placeholder="Leave a message in the guestbox..."></textarea>
+            <div style="margin-top:6px;"><button id="shout-btn">Post Shout</button></div>
+          </div>
+        </div>
+      `;
+      document.getElementById('shout-btn').addEventListener('click', async () => {
+        const ta = document.getElementById('shout-input');
+        const msg = ta.value.trim();
+        if (!msg) return;
+        const btn = document.getElementById('shout-btn');
+        btn.disabled = true;
+        try {
+          await DPW.postShout(msg);
+          ta.value = '';
+          await loadShouts();
+        } catch (e) {
+          alert(e.message);
+          btn.disabled = false;
+        }
+      });
+    } else {
+      formArea.innerHTML = `<p style="font-size:10px;color:#9999cc;"><a href="login.html">Log in</a> to sign the guestbook.</p>`;
+    }
+  }
+  loadShouts();
+})();
+</script>
+</body>
+</html>

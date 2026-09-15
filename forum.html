@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Forum ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+    <div class="site-subtitle">// THE FORUM //</div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home">Home</a>
+    <a href="forum.html" data-page="forum" class="current">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login">Login</a>
+      <a href="register.html" data-page="register">Register</a>
+    </span>
+  </div>
+
+  <p id="logged-in-as" style="text-align:center;color:#66ffcc;font-family:'Courier New',monospace;font-size:11px;margin:8px;">checking session...</p>
+
+  <div id="category-view">
+    <div class="panel">
+      <div class="panel-head">Forum Categories</div>
+      <div class="panel-body" id="categories-box">
+        <p>loading categories...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="thread-list-view" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <a href="#" id="back-to-categories" style="color:#ffff00;">« Back to Categories</a>
+        &nbsp;|&nbsp; <span id="current-category-name">Category</span>
+      </div>
+      <div class="panel-body">
+        <div id="new-thread-area" style="margin-bottom:14px;"></div>
+        <div id="threads-box"><p>loading threads...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span></div>
+    <div class="webring">
+      <span class="star">★</span>
+      <a href="index.html">« BACK HOME</a>
+      <span class="star">★</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  const user = await DPW.initChrome('forum');
+  if (!DPW.configOk()) return;
+
+  const categoryView = document.getElementById('category-view');
+  const threadListView = document.getElementById('thread-list-view');
+
+  function showCategories() {
+    threadListView.style.display = 'none';
+    categoryView.style.display = 'block';
+    history.replaceState(null, '', 'forum.html');
+    loadCategories();
+  }
+  document.getElementById('back-to-categories').addEventListener('click', (e) => {
+    e.preventDefault();
+    showCategories();
+  });
+
+  async function loadCategories() {
+    const box = document.getElementById('categories-box');
+    box.innerHTML = '<p>loading categories...</p>';
+    try {
+      const categories = await DPW.getCategoriesWithStats();
+      const sections = {};
+      for (const cat of categories) {
+        if (!sections[cat.section]) sections[cat.section] = [];
+        sections[cat.section].push(cat);
+      }
+
+      let html = '';
+      for (const section of Object.keys(sections)) {
+        html += `<div class="section-title">${DPW.escapeHtml(section)}</div>`;
+        html += `<table class="forum-table"><tr><th>Category</th><th>Threads</th><th>Last Activity</th></tr>`;
+        for (const cat of sections[section]) {
+          html += `
+            <tr>
+              <td class="cat-name">
+                <a href="#" data-cat-slug="${cat.slug}" data-cat-name="${DPW.escapeHtml(cat.name)}" class="open-cat">${DPW.escapeHtml(cat.name)}</a>
+                <div class="cat-desc">${DPW.escapeHtml(cat.description)}</div>
+              </td>
+              <td class="num-cell">${cat.threadCount}</td>
+              <td class="last-cell">${cat.lastThread
+                ? `${DPW.escapeHtml(cat.lastThread.title)}<br>by ${DPW.escapeHtml(cat.lastThread.username)}, ${DPW.timeAgo(cat.lastThread.created_at)}`
+                : '<span style="color:#666699;">no threads yet</span>'}</td>
+            </tr>
+          `;
+        }
+        html += `</table><br>`;
+      }
+      box.innerHTML = html || '<p>No categories found.</p>';
+
+      box.querySelectorAll('.open-cat').forEach((link) => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          openCategory(link.getAttribute('data-cat-slug'), link.getAttribute('data-cat-name'));
+        });
+      });
+    } catch (e) {
+      box.innerHTML = `<p style="color:#ff6666;">Could not load categories. (${DPW.escapeHtml(e.message)})</p>`;
+    }
+  }
+
+  async function openCategory(catSlug, catName) {
+    categoryView.style.display = 'none';
+    threadListView.style.display = 'block';
+    document.getElementById('current-category-name').textContent = catName;
+    history.replaceState(null, '', `forum.html?category=${catSlug}`);
+
+    const newThreadArea = document.getElementById('new-thread-area');
+    if (user) {
+      newThreadArea.innerHTML = `
+        <button id="toggle-new-thread">+ New Thread</button>
+        <div id="new-thread-form" style="display:none;margin-top:10px;">
+          <div class="editor-frame">
+            <div style="padding:8px;">
+              <label>Thread Title</label>
+              <input type="text" id="nt-title" maxlength="140" style="width:100%;box-sizing:border-box;">
+              <div class="editor-label" style="margin-top:8px;">[ MESSAGE ]</div>
+              <textarea id="nt-message" rows="5" maxlength="8000" placeholder="Type your message here..."></textarea>
+              <div style="margin-top:8px;"><button id="nt-submit">Post Thread</button></div>
+              <div id="nt-status" class="status-msg" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('toggle-new-thread').addEventListener('click', () => {
+        const f = document.getElementById('new-thread-form');
+        f.style.display = f.style.display === 'none' ? 'block' : 'none';
+      });
+      document.getElementById('nt-submit').addEventListener('click', async () => {
+        const title = document.getElementById('nt-title').value.trim();
+        const message = document.getElementById('nt-message').value.trim();
+        const statusEl = document.getElementById('nt-status');
+        if (!title || !message) {
+          DPW.showStatus(statusEl, 'ERROR: Title and message cannot be empty.', 'error');
+          return;
+        }
+        const btn = document.getElementById('nt-submit');
+        btn.disabled = true;
+        try {
+          const threadId = await DPW.createThread(catSlug, title, message);
+          window.location.href = `thread.html?id=${threadId}`;
+        } catch (e) {
+          DPW.showStatus(statusEl, e.message, 'error');
+          btn.disabled = false;
+        }
+      });
+    } else {
+      newThreadArea.innerHTML = `<p style="font-size:11px;color:#9999cc;"><a href="login.html">Log in</a> to start a new thread.</p>`;
+    }
+
+    const box = document.getElementById('threads-box');
+    box.innerHTML = '<p>loading threads...</p>';
+    try {
+      const threads = await DPW.listThreads(catSlug);
+      if (threads.length === 0) {
+        box.innerHTML = '<p style="color:#9999cc;">No threads in this category yet. Be the first to post!</p>';
+        return;
+      }
+      const sorted = [...threads].sort((a, b) => new Date(b.last_activity) - new Date(a.last_activity));
+      box.innerHTML = `
+        <table class="forum-table">
+          <tr><th>Title</th><th>Author</th><th>Replies</th><th>Last Activity</th></tr>
+          ${sorted.map((t) => `
+            <tr>
+              <td class="cat-name"><a href="thread.html?id=${t.id}">${DPW.escapeHtml(t.title)}</a></td>
+              <td>${DPW.escapeHtml(t.author)}</td>
+              <td class="num-cell">${t.reply_count}</td>
+              <td class="last-cell">${DPW.timeAgo(t.last_activity)}</td>
+            </tr>
+          `).join('')}
+        </table>
+      `;
+    } catch (e) {
+      box.innerHTML = `<p style="color:#ff6666;">Could not load threads. (${DPW.escapeHtml(e.message)})</p>`;
+    }
+  }
+
+  // deep-link support: forum.html?category=cat-pc-games
+  const preselected = DPW.qs('category');
+  if (preselected) {
+    const cat = DPW.CATEGORIES.find((c) => c.slug === preselected);
+    if (cat) {
+      openCategory(cat.slug, cat.name);
+    } else {
+      showCategories();
+    }
+  } else {
+    showCategories();
+  }
+})();
+</script>
+</body>
+</html>

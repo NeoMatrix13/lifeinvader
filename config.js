@@ -1,0 +1,17 @@
+// config.js
+// Fill these in to connect the site to your GitHub repo. See the README
+// section "Hosting it online (GitHub-as-backend edition)" for how to create
+// the token.
+//
+// IMPORTANT: this token will be visible to anyone who views this site's
+// source — that's inherent to running a backend-free static site this way.
+// Create a token scoped to ONLY this one repository, with ONLY "Issues"
+// and "Contents" permissions (read and write), so the worst case if it's
+// misused is limited to this repo, not your whole GitHub account.
+
+const GH_CONFIG = {
+  owner: "your-github-username",   // e.g. "hellb"
+  repo: "your-repo-name",          // e.g. "dead-pixel-web"
+  branch: "main",                  // the branch GitHub Pages / your repo uses
+  token: "PASTE_YOUR_TOKEN_HERE",  // a fine-grained token, scoped to this repo only
+};

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>:: Dead Pixel Web :: Register ::</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="page">
+
+  <div class="viewport-notice">*** BEST VIEWED AT 800x600 RESOLUTION ***</div>
+
+  <div class="site-header">
+    <div class="site-title"><span class="sparkle">✦</span> DEAD PIXEL WEB <span class="sparkle">✦</span></div>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" data-page="home">Home</a>
+    <a href="forum.html" data-page="forum">Forum</a>
+    <a href="index.html#members" data-page="members">Members</a>
+    <span id="nav-auth-area" style="display:contents;">
+      <a href="login.html" data-page="login">Login</a>
+      <a href="register.html" data-page="register" class="current">Register</a>
+    </span>
+  </div>
+
+  <div class="panel" style="max-width:400px;margin:24px auto;">
+    <div class="panel-head">Create a New Account</div>
+    <div class="panel-body">
+      <div class="field-row">
+        <label>Username (3-20 chars, letters/numbers/_/-)</label>
+        <input type="text" id="reg-username" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div class="field-row">
+        <label>Password (min 6 characters)</label>
+        <input type="password" id="reg-password" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div class="field-row">
+        <label>Confirm Password</label>
+        <input type="password" id="reg-confirm" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div style="margin-top:10px;">
+        <button id="register-btn" class="btn-hot">Register</button>
+      </div>
+      <div id="register-status" class="status-msg" style="display:none;"></div>
+      <p style="font-size:10px;color:#9999cc;margin-top:14px;">Already a member? <a href="login.html">Login here »</a></p>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>Dead Pixel Web &copy; <span id="footer-year"></span></div>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="github-api.js"></script>
+<script src="script.js"></script>
+<script>
+(async function () {
+  document.getElementById('footer-year').textContent = new Date().getFullYear();
+  await DPW.initChrome('register');
+  if (!DPW.configOk()) return;
+
+  const existing = await DPW.currentUser();
+  if (existing) window.location.href = 'index.html';
+
+  const btn = document.getElementById('register-btn');
+  const statusEl = document.getElementById('register-status');
+
+  async function doRegister() {
+    const username = document.getElementById('reg-username').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-confirm').value;
+
+    if (!username || !password || !confirmPassword) {
+      DPW.showStatus(statusEl, 'ERROR: All fields are required.', 'error');
+      return;
+    }
+    if (password !== confirmPassword) {
+      DPW.showStatus(statusEl, 'ERROR: Passwords do not match.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    try {
+      await DPW.register(username, password, confirmPassword);
+      DPW.showStatus(statusEl, 'WELCOME TO DEAD PIXEL WEB! Redirecting...', 'ok');
+      setTimeout(() => (window.location.href = 'index.html'), 600);
+    } catch (e) {
+      DPW.showStatus(statusEl, e.message, 'error');
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', doRegister);
+})();
+</script>
+</body>
+</html>
