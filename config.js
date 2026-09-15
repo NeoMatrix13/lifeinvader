@@ -10,8 +10,8 @@
 // misused is limited to this repo, not your whole GitHub account.
 
 const GH_CONFIG = {
-  owner: "your-github-username",   // e.g. "hellb"
-  repo: "your-repo-name",          // e.g. "dead-pixel-web"
+  owner: "NeoMatrix13",   // e.g. "hellb"
+  repo: "lifeinvader",          // e.g. "dead-pixel-web"
   branch: "main",                  // the branch GitHub Pages / your repo uses
-  token: "PASTE_YOUR_TOKEN_HERE",  // a fine-grained token, scoped to this repo only
+  token: "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",  // a fine-grained token, scoped to this repo only
 };
